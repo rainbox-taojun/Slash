@@ -1,0 +1,4 @@
+repository "Slash@ssl://rainbox94@sh03-plasticscm.unity.cn:8787"
+  path "/"
+    smartbranch "/main/taojun1994" 
+     
