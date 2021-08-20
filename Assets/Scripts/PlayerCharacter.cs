@@ -25,7 +25,7 @@ public class PlayerCharacter : MonoBehaviour
     void Move()
 	{
         Vector3 velocityTemp = rigid.velocity;
-        speed += speedAcc * Time.deltaTime;
+        speed += (speedAcc * Time.deltaTime);
         speed = Mathf.Clamp(speed, 0f, speedMax);
         velocityTemp.z = speed;
         if (velocityTemp.y > 0f)
