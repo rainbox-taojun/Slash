@@ -22,6 +22,11 @@ public class PlayerCharacter : MonoBehaviour
     public const float speedMax = 10f; // 最大速度
     public const float speedAcc = 5f; // 加速度
 
+    public bool canAttack = true;
+    const float attackTime = 0.3f;
+    public float attackingTime;
+
+
     void Awake()
     {
         rigid = GetComponent<Rigidbody>();
@@ -31,6 +36,11 @@ public class PlayerCharacter : MonoBehaviour
     void Update()
     {
         Move();
+
+        if (attackingTime > 0)
+		{
+            attackingTime = attackTime - Time.deltaTime;
+		}
     }
 
     void Move()
@@ -49,6 +59,8 @@ public class PlayerCharacter : MonoBehaviour
 
     public void Attack()
 	{
+        if (!canAttack) return;
+
         if (attackMotion == AttackMotion.Left)
 		{
             animator.SetTrigger("OnLeftAttack");
@@ -61,5 +73,17 @@ public class PlayerCharacter : MonoBehaviour
             swordEffectRight.Play();
             attackMotion = AttackMotion.Left;
         }
+
+        attackingTime = attackTime;
+        canAttack = false;
+
+        CancelInvoke("ResetCanAttack");
+        Invoke("ResetCanAttack", attackingTime + 1);
+
+    }
+
+    public void ResetCanAttack()
+	{
+        canAttack = true;
 	}
 }
