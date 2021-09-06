@@ -13,7 +13,71 @@ public class BotGroup : MonoBehaviour
     //飞溅
     public void GroupBlowout()
     {
+        Vector3 blowout;        // 怪物飞散的方向
+        Vector3 blowoutUp;      // 飞散方向的垂直分量
+        Vector3 blowoutRight;   // 飞散方向的水平分量
 
+        float topRadius;        // 圆锥的顶面半径
+        float arcLength;        // 圆锥顶面飞散范围弧长，根据bot数量决定
+
+        float upAngle;          // 绕Y轴旋转角度
+        float upAngleCenter;    // 初始中心
+        float upAngleSwing;     // 偏移角
+        float rightAngle;       // 绕X轴旋转角度
+
+        float blowoutSpeed;     // 速度
+        float blowoutSpeedVary; // 速度变化调控
+
+        // ------------------------------
+        topRadius = 0.3f;
+        blowoutSpeedVary = 10.0f;
+        rightAngle = 40.0f;
+        upAngleCenter = 180.0f;
+        upAngleSwing = 10.0f;
+        // ------------------------------
+
+        // 随机一个圆锥前后倾斜的角度
+        rightAngle += Random.Range(-5.0f, 5.0f);
+
+        // 根据组内怪物数量决定圆周顶面的飞散弧度，不能超过120
+        arcLength = bots.Length * 30.0f;
+        arcLength = Mathf.Min(arcLength, 120.0f);
+
+        // 围绕Y轴的旋转角
+        upAngle = upAngleCenter;
+        upAngle += upAngleSwing;
+
+        // 遍历每一个怪物，决定他们的飞散结果
+        foreach(BotCharacter bot in bots)
+		{
+            // 飞散方向
+            blowoutUp = Vector3.up; // 飞散圆锥的中心轴
+            blowoutRight = Vector3.forward * topRadius; // 飞散圆锥的顶面中心到顶面边缘的向量
+            blowoutRight = Quaternion.AngleAxis(upAngle, Vector3.up) * blowoutRight; // 将上一步得到的向量绕Y轴旋转upAngle
+            blowout = blowoutUp + blowoutRight; // 两向量相加得到代表飞散方向的第三向量
+            blowout.Normalize();
+
+            // 飞散方向计算上前后倾斜
+            blowout = Quaternion.AngleAxis(rightAngle, Vector3.right) * blowout;
+
+            // 飞散开的速度
+            blowoutSpeed = blowoutSpeedVary * Random.Range(0.8f, 1.5f);
+            blowout *= blowoutSpeed;
+
+            // 角速度
+            // 叉乘后得到的第三向量，与飞散方向和Y轴垂直，便是旋转怪物的方向
+            Vector3 angular_velocity = Vector3.Cross(Vector3.up, blowout);
+            angular_velocity.Normalize();
+            angular_velocity *= Random.Range(0.5f, 1.5f) * blowoutSpeed;
+
+            // 应用
+            bot.Blowout(blowout, angular_velocity);
+
+            // 改变Y轴旋转角，是每个怪物的飞散方向，都在顶面飞散弧长的不同位置
+            upAngle += arcLength / (bots.Length);
+        }
+
+        Destroy(this.gameObject);
     }
 
     // 生成怪物
