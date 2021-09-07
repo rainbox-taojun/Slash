@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class BotGroup : MonoBehaviour
 {
+    public enum Type
+	{
+        None = -1,
+        Normal,
+        Slow,
+	}
     BotCharacter[] bots;
 
     public BotCharacter botPrefab;

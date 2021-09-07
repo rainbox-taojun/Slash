@@ -86,4 +86,13 @@ public class PlayerCharacter : MonoBehaviour
 	{
         canAttack = true;
 	}
+
+    public void HitEnemy(GameObject target)
+	{
+        // 击中敌人后，立刻刷新攻击状态
+        ResetCanAttack();
+        //swordHitEffect.transform.position = target.transform.position;
+        //swordHitEffect.Play();
+        //GameMode.Scored();
+    }
 }
