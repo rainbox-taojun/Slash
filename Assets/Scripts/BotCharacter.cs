@@ -9,13 +9,24 @@ public class BotCharacter : MonoBehaviour
 
 	bool isAlive = true;
 	Rigidbody rigid;
+	const float yHeight = -0.55f;
 
-	private void Start()
+	private void Awake()
 	{
 		bounds = GetComponent<Collider>().bounds;
+		GetComponent<Collider>().enabled = false;
 		rigid = GetComponent<Rigidbody>();
 	}
 
+	private void Update()
+	{
+		if (isAlive)
+		{
+			var pos = transform.localPosition;
+			pos.y = yHeight;
+			transform.localPosition = pos;
+		}
+	}
 
 	public void Blowout(Vector3 blowout, Vector3 angularVelocity)
 	{

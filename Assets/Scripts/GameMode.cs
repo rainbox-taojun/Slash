@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameMode : MonoBehaviour
 {
+	public BotGroup botGroupPrefab;
+
 	//本怪物最多生成多少怪物
 	public float botGroupTotal = 5;
 	// 当前生成了多少组怪物
@@ -35,6 +37,16 @@ public class GameMode : MonoBehaviour
 
 	PlayerCharacter character;
 
+	private void Awake()
+	{
+		character = FindObjectOfType<PlayerCharacter>();
+	}
+
+	void Update()
+	{
+		GameLoop();
+	}
+
 	void GameLoop()
 	{
 		// 准备生成一波怪物组
@@ -48,9 +60,9 @@ public class GameMode : MonoBehaviour
 
 				if(spawnGroupTypeNext == BotGroup.Type.Normal)
 				{
-					spawnLine = Character.transform.position.z + spawnLineNextOffect;
+					spawnLine = character.transform.position.z + spawnLineNextOffect;
 				}
-				else if (spawngroupTypeNext == BotGroup.Type.Slow)
+				else if (spawnGroupTypeNext == BotGroup.Type.Slow)
 				{
 					spawnLine = character.transform.position.z + 50.0f;
 				}
@@ -77,5 +89,79 @@ public class GameMode : MonoBehaviour
 		// 刷新下拨怪物组的类型
 		UpdateNextGroupType();
 
+	}
+
+	private void SpawnBotGroup(BotGroup.Type type)
+	{
+		float speed = spawnNextSpeed;
+		Vector3 spawnPos;
+		spawnPos = character.transform.position;
+		spawnPos.z += spawnPosOffect;
+		switch (spawnGroupTypeCurrent)
+		{
+			case BotGroup.Type.Slow:
+				{
+					speed = 1.0f;
+				}
+				break;
+
+			case BotGroup.Type.Normal:
+				{
+					speed = spawnNextSpeed;
+				}
+				break;
+		}
+
+		BotGroup botGroup = GameObject.Instantiate<BotGroup>(botGroupPrefab);
+		// 怪物生成的Y轴位置处于自身碰撞盒范围的一半
+		var extents = botGroup.GetComponent<Collider>().bounds.extents;
+		spawnPos.y = extents.y / 2;
+		botGroup.transform.position = spawnPos;
+		// 怪物组生成内部怪物
+		botGroup.SpawnBot(spawnBotNum);
+		botGroup.runSpeed = speed;
+	}
+
+	public void UpdateNextGroupType()
+	{
+		// 还有要生成的正常怪物时，先生成正常怪物
+		if(spawnNormalCount > 0)
+		{
+			float rate;
+
+			// 用于计算10个以内的怪物加速
+			rate = (float)botGroupCount / 10.0f;
+			rate = Mathf.Clamp01(rate);
+
+			//看啥的怪物越多下一批怪物的速度也越快
+			//通过rate，来在最大和最小速度间插值，使得下一波的速度。与当前击杀怪物数量成正比
+			spawnNextSpeed = Mathf.Lerp(spawnNextSpeedMin, spawnNextSpeedMax, rate);
+
+			spawnNormalCount--;
+
+			if (spawnNormalCount <=0)
+			{
+				//当普通型怪物都生成完后，随机一种增强型怪物
+				spawnGroupTypeNext = (BotGroup.Type)Random.Range(1, 1);
+				spawnIncreaseCount = 1;
+			}
+
+			return;
+		}
+
+		if (spawnIncreaseCount > 0)
+		{
+			spawnIncreaseCount--;
+
+			if (spawnIncreaseCount <= 0)
+			{
+				//
+				spawnGroupTypeNext = BotGroup.Type.Normal;
+				// 下一轮随机生成多少组普通怪物
+				spawnNormalCount = Random.Range(3, 7);
+			}
+
+			return;
+		}
 	}
 }
